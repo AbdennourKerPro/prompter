@@ -20,7 +20,7 @@ const defaults = {
   autoScroll: true,
   countdown: true,
   facing: 'user',
-  quality: '1080',
+  format: 'wide',     // wide = 4:3 (full sensor, widest view), or 16:9 '1080' / '720'
 };
 
 function loadSettings() {
@@ -181,12 +181,14 @@ async function startCamera() {
     throw new Error('La caméra n’est disponible qu’en HTTPS (ex. GitHub Pages). Ouvre la page avec une adresse https://');
   }
   stopCamera();
-  const [w, h] = s.quality === '720' ? [1280, 720] : [1920, 1080];
+  // 16:9 is cropped from the 4:3 sensor, which zooms in; 4:3 keeps the full field of view.
+  const [w, h] = { wide: [1920, 1440], '1080': [1920, 1080], '720': [1280, 720] }[s.format] || [1920, 1440];
   const portrait = window.innerHeight > window.innerWidth;
   const video = {
     facingMode: s.facing,
     width: { ideal: portrait ? h : w },
     height: { ideal: portrait ? w : h },
+    aspectRatio: { ideal: portrait ? h / w : w / h },
     frameRate: { ideal: 30 },
   };
   const audio = { echoCancellation: true, noiseSuppression: true };
@@ -199,6 +201,12 @@ async function startCamera() {
     // Retry with looser constraints (some phones reject the resolution).
     stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: s.facing }, audio: true });
   }
+  // Some Android phones start zoomed in: reset to the widest zoom.
+  const vtrack = stream.getVideoTracks()[0];
+  try {
+    const caps = vtrack.getCapabilities ? vtrack.getCapabilities() : {};
+    if (caps.zoom) await vtrack.applyConstraints({ advanced: [{ zoom: caps.zoom.min }] });
+  } catch (e) { /* zoom not supported */ }
   els.preview.srcObject = stream;
   els.preview.classList.toggle('mirrored', s.facing === 'user');
   await els.preview.play().catch(() => {});
@@ -302,7 +310,7 @@ async function startRecording() {
 
   const mimeType = pickMimeType();
   const opts = {
-    videoBitsPerSecond: s.quality === '720' ? 5_000_000 : 8_000_000,
+    videoBitsPerSecond: s.format === '720' ? 5_000_000 : 8_000_000,
     audioBitsPerSecond: 128_000,
   };
   if (mimeType) opts.mimeType = mimeType;
@@ -429,7 +437,7 @@ function syncSettingsUI() {
   }
   for (const [c, key] of checks) $(c).checked = !!s[key];
   $('#s-facing').value = s.facing;
-  $('#s-quality').value = s.quality;
+  $('#s-format').value = s.format;
 }
 
 for (const [r, o, key, fmt] of ranges) {
@@ -447,7 +455,7 @@ for (const [c, key] of checks) {
     applyLayout();
   });
 }
-for (const [sel, key] of [['#s-facing', 'facing'], ['#s-quality', 'quality']]) {
+for (const [sel, key] of [['#s-facing', 'facing'], ['#s-format', 'format']]) {
   $(sel).addEventListener('change', (e) => {
     if (recorder) { e.target.value = s[key]; toast('Impossible pendant l’enregistrement'); return; }
     s[key] = e.target.value;

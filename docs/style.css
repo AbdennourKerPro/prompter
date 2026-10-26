@@ -37,8 +37,8 @@ button, select, .button {
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  background: #111;
+  object-fit: contain; /* show the whole recorded frame, no crop */
+  background: #000;
 }
 #preview.mirrored { transform: scaleX(-1); }
 

@@ -20,7 +20,7 @@ Ouvrir `index.html` directement depuis les fichiers du téléphone ne marche pas
 - **Bouton rouge** : compte à rebours 3 s, puis enregistrement + défilement automatique. Re-touche pour arrêter.
 - **Toucher le texte** : pause / reprise du défilement. **Glisser le texte** : avancer / reculer à la main.
 - **− / +** : vitesse. **⏮** : retour au début. **Réglages** : taille du texte, hauteur et opacité du prompteur,
-  marges, texte centré, miroir, caméra avant/arrière, 720p/1080p, compte à rebours, défilement auto.
+  marges, texte centré, miroir, caméra avant/arrière, cadrage (large 4:3 par défaut, ou 16:9), compte à rebours, défilement auto.
 - Après l'arrêt : aperçu de la vidéo, puis **Enregistrer / partager** (iPhone : « Enregistrer la vidéo » → Photos)
   ou **Télécharger**. Pense à sauvegarder avant de fermer la page.
 - Clavier / télécommande Bluetooth : Espace ou Entrée = pause, ↑/↓ = vitesse, ←/→ = ligne, R = enregistrer.
