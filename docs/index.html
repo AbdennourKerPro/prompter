@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="theme-color" content="#000000">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Prompteur">
+  <title>Prompteur</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Camera preview (this is what gets recorded, without anything drawn on top) -->
+  <video id="preview" autoplay muted playsinline></video>
+
+  <!-- Prompter overlay: an HTML layer, never part of the recorded video -->
+  <div id="prompter">
+    <div id="script"></div>
+    <div id="marker"></div>
+  </div>
+
+  <div id="rec-badge" hidden><span class="dot"></span><span id="rec-time">0:00</span></div>
+  <div id="countdown" hidden></div>
+  <div id="toast" hidden></div>
+
+  <div id="bar">
+    <button id="btn-edit" class="icon" aria-label="Modifier le script">
+      <svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16v4z"/><path d="M14 6l4 4"/></svg>
+    </button>
+    <button id="btn-rewind" class="icon" aria-label="Revenir au début">
+      <svg viewBox="0 0 24 24"><path d="M6 5v14"/><path d="M19 5L9 12l10 7V5z"/></svg>
+    </button>
+    <button id="btn-rec" aria-label="Enregistrer"><span></span></button>
+    <button id="btn-play" class="icon" aria-label="Lecture / pause">
+      <svg class="i-play" viewBox="0 0 24 24"><path d="M7 4l13 8-13 8V4z"/></svg>
+      <svg class="i-pause" viewBox="0 0 24 24"><path d="M7 4h3v16H7zM14 4h3v16h-3z"/></svg>
+    </button>
+    <button id="btn-settings" class="icon" aria-label="Réglages">
+      <svg viewBox="0 0 24 24"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg>
+    </button>
+  </div>
+
+  <div id="speed-row">
+    <button id="speed-down" aria-label="Moins vite">−</button>
+    <span id="speed-label">Vitesse 40</span>
+    <button id="speed-up" aria-label="Plus vite">+</button>
+  </div>
+
+  <!-- Settings sheet -->
+  <section id="settings" class="sheet" hidden>
+    <header><h2>Réglages</h2><button class="close" data-close="settings">OK</button></header>
+    <label>Vitesse <output id="o-speed"></output><input id="r-speed" type="range" min="5" max="300" step="5"></label>
+    <label>Taille du texte <output id="o-font"></output><input id="r-font" type="range" min="16" max="90" step="2"></label>
+    <label>Hauteur du prompteur <output id="o-height"></output><input id="r-height" type="range" min="20" max="100" step="5"></label>
+    <label>Opacité du fond <output id="o-bg"></output><input id="r-bg" type="range" min="0" max="1" step="0.05"></label>
+    <label>Marges latérales <output id="o-margin"></output><input id="r-margin" type="range" min="0" max="30" step="1"></label>
+    <div class="row"><span>Texte centré</span><input id="c-center" type="checkbox"></div>
+    <div class="row"><span>Texte en miroir</span><input id="c-mirror" type="checkbox"></div>
+    <div class="row"><span>Défilement auto au début de l’enregistrement</span><input id="c-auto" type="checkbox"></div>
+    <div class="row"><span>Compte à rebours 3 s</span><input id="c-count" type="checkbox"></div>
+    <div class="row"><span>Caméra</span>
+      <select id="s-facing"><option value="user">Avant (selfie)</option><option value="environment">Arrière</option></select></div>
+    <div class="row"><span>Qualité</span>
+      <select id="s-quality"><option value="720">720p</option><option value="1080">1080p</option></select></div>
+    <p class="hint" id="cam-info"></p>
+  </section>
+
+  <!-- Script editor -->
+  <section id="editor" class="sheet full" hidden>
+    <header>
+      <button class="close" data-close="editor">Annuler</button>
+      <h2>Script</h2>
+      <button id="btn-save-script" class="primary">OK</button>
+    </header>
+    <textarea id="script-input" placeholder="Colle ton script ici…" spellcheck="false"></textarea>
+  </section>
+
+  <!-- Recording result -->
+  <section id="result" class="sheet full" hidden>
+    <header>
+      <button class="close" data-close="result">Fermer</button>
+      <h2>Vidéo</h2>
+      <span></span>
+    </header>
+    <video id="result-video" controls playsinline></video>
+    <p class="hint" id="result-info"></p>
+    <div class="actions">
+      <button id="btn-share" class="primary" hidden>Enregistrer / partager</button>
+      <a id="btn-download" class="button">Télécharger</a>
+    </div>
+    <p class="hint">Sur iPhone, « Enregistrer / partager » puis « Enregistrer la vidéo » la met dans Photos.
+      La vidéo est perdue si tu fermes la page sans l’avoir enregistrée.</p>
+  </section>
+
+  <!-- Start screen (camera access needs a tap on some phones) -->
+  <section id="start">
+    <h1>Prompteur</h1>
+    <p>Ton script défile en haut de l’écran, près de la caméra, pendant que la vidéo s’enregistre.
+      Le texte n’apparaît pas dans la vidéo.</p>
+    <button id="btn-start" class="primary big">Activer la caméra</button>
+    <p class="hint" id="start-error"></p>
+  </section>
+
+  <script src="app.js"></script>
+</body>
+</html>
