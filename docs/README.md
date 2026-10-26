@@ -4,7 +4,7 @@ Web app statique : ton script défile en haut de l'écran, près de la caméra a
 enregistre la vidéo (caméra + micro). Le texte est une couche HTML par-dessus l'aperçu : **il n'apparaît pas
 dans la vidéo**. Aucun flou, aucun serveur, rien n'est envoyé nulle part.
 
-Fichiers : `index.html`, `style.css`, `app.js` (HTML/CSS/JS sans dépendance).
+Un seul fichier : `index.html` (HTML, CSS et JS inclus, sans dépendance).
 
 ## Mise en ligne sur GitHub Pages (HTTPS obligatoire pour la caméra)
 1. Pousse le dépôt sur GitHub (le dossier `docs/` doit être sur la branche `main`).
